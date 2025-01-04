@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Drawing Board</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        canvas {
+            border: 1px solid black;
+            display: block;
+            margin-bottom: 10px;
+        }
+        button {
+            margin-right: 10px;
+        }
+        img {
+            border: 1px solid black;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Canvas Drawing Board</h2>
+    <!-- The drawing canvas -->
+    <canvas id="drawingCanvas" width="500" height="500"></canvas>
+
+    <!-- Form to submit the drawing along with the user's full name -->
+    <form id="saveForm" action="drawing_board.php" method="POST">
+        <label for="full_name">Full Name:</label>
+        <input type="text" name="full_name" id="full_name" required><br><br>
+        <input type="hidden" name="drawing" id="drawingData">
+        <button type="button" onclick="saveDrawing()">Save Drawing</button>
+        <button type="button" onclick="clearCanvas()">Clear Canvas</button>
+    </form>
+
+    <h3>Saved Drawing:</h3>
+    <!-- Display the saved drawing, if available -->
+    <?php if ($saved_drawing): ?>
+        <p><strong>Saved by:</strong> <?php echo htmlspecialchars($saved_full_name); ?></p>
+        <img id="savedImage" alt="Your saved drawing" src="<?php echo $saved_drawing; ?>">
+    <?php else: ?>
+        <p>No saved drawing yet.</p>
+    <?php endif; ?>
+
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+
+        // Start drawing on mouse down
+        canvas.addEventListener('mousedown', () => drawing = true);
+        // Stop drawing on mouse up
+        canvas.addEventListener('mouseup', () => {
+            drawing = false;
+            ctx.beginPath();
+        });
+        // Draw on the canvas while mouse moves
+        canvas.addEventListener('mousemove', draw);
+
+        // Draw function for the canvas
+        function draw(event) {
+            if (!drawing) return;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = 'black';
+
+            ctx.lineTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+        }
+
+        // Save the drawing and submit the form
+        function saveDrawing() {
+            const drawingData = canvas.toDataURL('image/png');
+            document.getElementById('drawingData').value = drawingData;
+            document.getElementById('saveForm').submit();
+        }
+
+        // Clear the canvas
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    </script>
+</body>
+</html>
